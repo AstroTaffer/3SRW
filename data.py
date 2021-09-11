@@ -23,6 +23,7 @@ class SRWData:
                   "clr_magn_file": "Clear magnitude file",
                   "clr_merr_file": "Clear magnitude error file",
                   "catalog_file": "Internal catalog file",
+                  "vss_mask_file": "Variable stars search mask file",
                   "image_filter": "Images filter",
                   # Only files with image_filter in their names are processed
 
@@ -40,7 +41,9 @@ class SRWData:
                   "isr": "Ensemble stars initial search radius in arcminutes",
                   "msr": "Ensemble stars maximum search radius in arcminutes",
 
-                  "std_lim": "Ensemble stars standart deviation limit"}
+                  "std_lim": "Ensemble stars standart deviation limit",
+
+                  "vss_method": "Variable stars search method"}
 
     def __init__(self, image_dir, **kwargs):
         # noinspection PyDictCreation
@@ -49,12 +52,15 @@ class SRWData:
         self.raw_flux = None
         self.raw_magn = None
         self.raw_merr = None
+        self.vs_mask = None
 
         # These parameters are used in output files names definition
         # And therefore must be specified out of turn
         self.pars["image_filter"] = kwargs.get("image_filter", "V")
         self.pars["aperture"] = kwargs.get("aperture", 4)
         # To me: set aperture to 4, 6 or 8
+        self.pars["vss_method"] = kwargs.get("vss_method", "ALL")
+        # Set to "ALL", "SIGMA", "ERRORS" or "ROMS2"
 
         self.pars["image_dir"] = image_dir
         self.pars["catalog_file"] = kwargs.get("catalog_file", "CATALOG.txt")
@@ -68,6 +74,8 @@ class SRWData:
 {self.pars['image_filter']}{self.pars['aperture']}.txt")
         self.pars["clr_merr_file"] = kwargs.get("clr_merr_file", f"CLR_MERR_\
 {self.pars['image_filter']}{self.pars['aperture']}.txt")
+        self.pars["vss_mask_file"] = kwargs.get("vss_mask_file", f"VSS_MASK_\
+{self.pars['image_filter']}{self.pars['aperture']}_{self.pars['vss_method']}.txt")
 
         self.pars["ext_catalog"] = kwargs.get("ext_catalog", "II/336")
         self.pars["mag_lim"] = kwargs.get("mag_lim", 14)

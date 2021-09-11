@@ -17,6 +17,7 @@ class SRWSubIOS:
         self.raw_merr = None
         self.clr_magn = None
         self.clr_merr = None
+        self.vs_mask = None
 
     def read_catalog_file(self):
         return asc.read(self.pars["catalog_file"], format="commented_header", delimiter="\t",
@@ -66,3 +67,9 @@ class SRWSubIOS:
             for image_index in range(self.clr_magn.shape[0]):
                 magn_file.write("\t".join(self.clr_magn[image_index].astype(str)) + "\n")
                 merr_file.write("\t".join(self.clr_merr[image_index].astype(str)) + "\n")
+
+    def read_vs_mask(self):
+        pass
+
+    def write_vs_mask(self):
+        pass

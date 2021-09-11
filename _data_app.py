@@ -79,6 +79,6 @@ class SRWSubAPP:
     def _logs_apphot(image_index, image_header):
         with open("LOGS.txt", "a") as logs_file:
             logs_file.write(f"{datetime.now()}\tAPPHOT: Processed image #{image_index + 1}\t"
-                            f"DATE-OBS {image_header['DATE-OBS']}")
+                            f"DATE-OBS {image_header['DATE-OBS']}\n")
             print(f"{datetime.now()}\tAPPHOT: Processed image # {image_index + 1}\t"
                   f"DATE-OBS {image_header['DATE-OBS']}")
