@@ -20,8 +20,8 @@ class SRWSubIOS:
         self.vs_mask = None
 
     def read_catalog_file(self):
-        return asc.read(self.pars["catalog_file"], format="commented_header", delimiter="\t",
-                        fill_values=[(asc.masked, "nan")])
+        self.catalog = asc.read(self.pars["catalog_file"], format="commented_header", delimiter="\t",
+                                fill_values=[(asc.masked, "nan")])
 
     def write_catalog_file(self):
         asc.write(self.catalog, self.pars["catalog_file"], overwrite=True, delimiter="\t",
@@ -69,7 +69,9 @@ class SRWSubIOS:
                 merr_file.write("\t".join(self.clr_merr[image_index].astype(str)) + "\n")
 
     def read_vs_mask(self):
-        pass
+        with open(self.pars["vs_mask_file"], "r") as mask_file:
+            self.vs_mask = np.array(mask_file.readline().split("\t"), dtype=bool)
 
     def write_vs_mask(self):
-        pass
+        with open(self.pars["vs_mask_file"], "w") as mask_file:
+            mask_file.write("\t".join(self.vs_mask.astype(str)))

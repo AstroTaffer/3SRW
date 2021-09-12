@@ -25,7 +25,7 @@ class SRWUtils:
     def _image_list_logs(image_list, dir_content):
         with open("LOGS.txt", "a") as logs_file:
             logs_file.write(f"Image directory scanned\nSelected {len(image_list)} images out of {len(dir_content)}\n")
-            print(f"Image directory scanned\nSelected {len(image_list)} images out of {len(dir_content)}\n")
+            print(f"Image directory scanned\nSelected {len(image_list)} images out of {len(dir_content)}")
 
     @staticmethod
     def read_fits_file(file_path):

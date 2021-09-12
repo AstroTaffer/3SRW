@@ -36,14 +36,8 @@ class SRWSubDFP:
                                        frame="icrs")
 
         for target_star_index in range(stars_number):
-            if np.isnan(self.raw_magn[:, target_star_index]).all():
-                # It would be better to just outright delete 'all-NaN' stars so I don't have to worry about them later
-                # But I don't have neither time nor will to worry about it right now
+            if np.isfinite(self.raw_magn[:, target_star_index]).any():
 
-                self.clr_magn[:, target_star_index] = np.nan
-                self.clr_merr[:, target_star_index] = np.nan
-                continue
-            else:
                 ens_stars_indexes = []
                 stars_goodness = [True for _ in range(stars_number)]
                 search_radius = self.pars["isr"]
@@ -93,18 +87,26 @@ class SRWSubDFP:
 
                     eca_std = np.nanstd(ens_stars_magn, axis=0)
                     if np.max(eca_std) > self.pars["std_lim"]:
-                        ens_stars_indexes = []
                         stars_goodness[ens_stars_indexes[np.argmax(eca_std)]] = False
+                        ens_stars_indexes = []
                         continue
                     else:
                         self.clr_magn[:, target_star_index] = self.raw_magn[:, target_star_index] - eca_correction
                         self.clr_merr[:, target_star_index] = np.sqrt(
                             (1 / np.nansum(1 / np.square(ens_stars_merr), axis=1))
                             + np.square(self.raw_merr[:, target_star_index]))
+                        counter_success += 1
 
                 if len(ens_stars_indexes) < 10:
                     self.clr_magn[:, target_star_index] = np.nan
                     self.clr_merr[:, target_star_index] = np.nan
+            else:
+                # It would be better to just outright delete 'all-NaN' stars so I don't have to worry about them later
+                # But I don't have neither time nor will to worry about it right now
+
+                self.clr_magn[:, target_star_index] = np.nan
+                self.clr_merr[:, target_star_index] = np.nan
+                continue
 
             if (target_star_index + 1) % 100 == 0:
                 self._logs_diffphot(target_star_index + 1, counter_success)

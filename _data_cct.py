@@ -52,7 +52,7 @@ class SRWSubCCT:
 
     def _logs_catalog(self, icc, ir):
         with open("LOGS.txt", "a") as logs_file:
-            logs_file.write(self.catalog.info())
+            # logs_file.write(self.catalog.info())
             logs_file.write(f"Image center: RA = {icc[0]}\tDEC = {icc[1]}\n")
             logs_file.write(f"Image radius: R = {ir}\n")
             print(self.catalog.info())

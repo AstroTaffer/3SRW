@@ -1,7 +1,14 @@
 from datetime import datetime
 
+from _data_ios import SRWSubIOS
+from _data_cct import SRWSubCCT
+from _data_app import SRWSubAPP
+from _data_dfp import SRWSubDFP
+from _data_vss import SRWSubVSS
+from _data_plt import SRWSubPLT
 
-class SRWData:
+
+class SRWData(SRWSubIOS, SRWSubCCT, SRWSubAPP, SRWSubDFP, SRWSubVSS, SRWSubPLT):
     """
     This class is the one intended for usage.
     It inherits all methods from internal subclasses.
@@ -23,7 +30,7 @@ class SRWData:
                   "clr_magn_file": "Clear magnitude file",
                   "clr_merr_file": "Clear magnitude error file",
                   "catalog_file": "Internal catalog file",
-                  "vss_mask_file": "Variable stars search mask file",
+                  "vs_mask_file": "Variable stars mask file",
                   "image_filter": "Images filter",
                   # Only files with image_filter in their names are processed
 
@@ -45,8 +52,8 @@ class SRWData:
 
                   "vss_method": "Variable stars search method"}
 
+    # noinspection PyMissingConstructor
     def __init__(self, image_dir, **kwargs):
-        # noinspection PyDictCreation
         self.pars = {}
         self.catalog = None
         self.raw_flux = None
@@ -74,11 +81,11 @@ class SRWData:
 {self.pars['image_filter']}{self.pars['aperture']}.txt")
         self.pars["clr_merr_file"] = kwargs.get("clr_merr_file", f"CLR_MERR_\
 {self.pars['image_filter']}{self.pars['aperture']}.txt")
-        self.pars["vss_mask_file"] = kwargs.get("vss_mask_file", f"VSS_MASK_\
+        self.pars["vs_mask_file"] = kwargs.get("vs_mask_file", f"VSS_MASK_\
 {self.pars['image_filter']}{self.pars['aperture']}_{self.pars['vss_method']}.txt")
 
         self.pars["ext_catalog"] = kwargs.get("ext_catalog", "II/336")
-        self.pars["mag_lim"] = kwargs.get("mag_lim", 14)
+        self.pars["mag_lim"] = kwargs.get("mag_lim", "14")
         self.pars["image_edge"] = kwargs.get("image_edge", 100)
 
         self.pars["search_box"] = kwargs.get("search_box", 15)
@@ -98,10 +105,21 @@ class SRWData:
             logs_file.write(2 * "\n" + 20 * "-" + "\n")
             logs_file.write(f"Current date and time\t{datetime.now()}\n")
             logs_file.write("New set of parameters is loaded:\n")
-            print(2 * "\n" + 20 * "-" + "\n")
-            print(f"Current date and time\t{datetime.now()}\n")
-            print("New set of parameters is loaded:\n")
+            print(2 * "\n" + 20 * "-")
+            print(f"Current date and time\t{datetime.now()}")
+            print("New set of parameters is loaded:")
 
             for key in self.pars.keys():
                 logs_file.write(f"{key}\t{SRWData.pars_names[key]} {self.pars[key]}\n")
-                print(f"{key}\t{SRWData.pars_names[key]} {self.pars[key]}\n")
+                print(f"{key}\t{SRWData.pars_names[key]} {self.pars[key]}")
+
+# TODO
+#   It is way too easy to forget to save your calculations
+#   thy must be implemented as "SAVE - ON/OFF" switch with ON by default
+#   Same goes with various plotting
+#   Plotting functions also have confusing names and bad code
+#   If a parameter is not specified by the moment it is used, it should be specifed on the run
+#   implement as "IF IS NONE" check
+#   Current logs are outright awful
+#   ROMS critetia needs to be rewritten and tested on higher quality data
+#   SINCE I'M CALCULATING "BJD % 1" I'M STUCK WITHIN BOUNDS OF ONE JULIAN DAY

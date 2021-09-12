@@ -2,8 +2,10 @@ from datetime import datetime
 
 import numpy as np
 
+from utils import SRWUtils
 
-class SRWSubMPL:
+
+class SRWSubVSS:
     """
     This subclass contains functions designed for variable stars search.
     """
@@ -27,11 +29,11 @@ class SRWSubMPL:
 
     def _vs_all(self):
         stars_number = len(self.catalog)
-        self.vs_mask = [False in range(stars_number)]
+        self.vs_mask = np.zeros(stars_number, dtype=bool)
         vs_counter = 0
 
         for _ in range(stars_number):
-            if not np.isnan(self.clr_magn[:, _]).all():
+            if np.isfinite(self.clr_magn[:, _]).all():
                 self.vs_mask[_] = True
                 vs_counter += 1
 
@@ -41,21 +43,38 @@ class SRWSubMPL:
         self._logs_vss(stars_number, vs_counter)
 
     def _vs_sigma(self):
-        pass
+        stars_number = len(self.catalog)
+        self.vs_mask = np.zeros(stars_number, dtype=bool)
+        vs_counter = 0
+
+        mean_star_magn = np.nanmean(self.clr_magn, axis=0)
+        std_star_magn = np.nanstd(self.clr_magn, axis=0)
+
+        finite_id = np.isfinite(mean_star_magn)
+        apr_std_func = np.polyfit(mean_star_magn[finite_id], std_star_magn[finite_id], deg=1)
+
+        for _ in range(stars_number):
+            # Use width
+            if std_star_magn[_] > apr_std_func[0] * mean_star_magn[_] + apr_std_func[1]:
+                self.vs_mask[_] = True
+                vs_counter += 1
+
+            if (_ + 1) % 100 == 0:
+                self._logs_vss(_, vs_counter)
+
+        self._logs_vss(stars_number, vs_counter)
 
     def _vs_merr(self):
         stars_number = len(self.catalog)
-        self.vs_mask = [False in range(stars_number)]
+        self.vs_mask = np.zeros(stars_number, dtype=bool)
         vs_counter = 0
 
         mean_star_magn = np.nanmean(self.clr_magn, axis=0)
         mean_star_merr = np.nanmean(self.clr_merr, axis=0)
-        bad_stars_indexes = np.where(np.isnan(mean_star_magn) | np.isnan(mean_star_merr))
-        apr_mean_star_magn = np.delete(mean_star_magn, bad_stars_indexes)
-        apr_mean_star_merr = np.delete(mean_star_merr, bad_stars_indexes)
 
-        apr_merr_func = np.polyfit(apr_mean_star_magn, np.log(apr_mean_star_merr), deg=1)
-        # Cut w=np.sqrt(merr_mean) - might be harmful
+        finite_id = np.isfinite(mean_star_magn)
+        apr_merr_func = np.polyfit(mean_star_magn[finite_id], np.log(mean_star_merr[finite_id]),
+                                   deg=1, w=np.sqrt(mean_star_merr))
 
         for _ in range(stars_number):
             if mean_star_merr[_] - np.exp(apr_merr_func[0] * mean_star_magn[_] + apr_merr_func[1]) > 0.0005:
@@ -68,7 +87,34 @@ class SRWSubMPL:
         self._logs_vss(stars_number, vs_counter)
 
     def _vs_roms2(self):
-        pass
+        stars_number = len(self.catalog)
+        images_number = len(SRWUtils.get_image_list(self.pars["image_dir"], self.pars["image_filter"]))
+        self.vs_mask = np.zeros(stars_number, dtype=bool)
+        vs_counter = 0
+
+        mean_star_magn = np.nanmean(self.clr_magn, axis=0)
+        std_star_magn = np.nanstd(self.clr_magn, axis=0)
+
+        good_id = np.where(mean_star_magn > 10)[0]
+        apr_std_func = np.polyfit(mean_star_magn[good_id], np.log(std_star_magn[good_id]),
+                                  deg=1, w=np.sqrt(std_star_magn))
+
+        for _ in range(stars_number):
+            med_star_magn = np.nanmedian(self.clr_magn[:, _])
+            etha = 0.0
+            for __ in range(images_number):
+                etha += abs((self.clr_magn[__, _] - med_star_magn) /
+                            (apr_std_func[0] * self.clr_magn[__, _] + apr_std_func[1]))
+            etha /= (images_number - 1)
+
+            if etha > 1:
+                self.vs_mask[_] = True
+                vs_counter += 1
+
+            if (_ + 1) % 100 == 0:
+                self._logs_vss(_, vs_counter)
+
+        self._logs_vss(stars_number, vs_counter)
 
     @staticmethod
     def _logs_vss(all_stars, var_stars):

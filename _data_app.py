@@ -34,10 +34,10 @@ class SRWSubAPP:
             wcs_object = WCS(image_header)
 
             stars_xy_coords = wcs_object.wcs_world2pix(self.catalog["RAJ2000"], self.catalog["DEJ2000"], 0)
-            bad_stars_x_mask = np.where((stars_xy_coords[0] < self.pars["edge"] / 10) |
-                                        (stars_xy_coords[0] > (image_data.shape[1] - self.pars["edge"] / 10)))[0]
-            bad_stars_y_mask = np.where((stars_xy_coords[1] < self.pars["edge"] / 10) |
-                                        (stars_xy_coords[1] > (image_data.shape[0] - self.pars["edge"] / 10)))[0]
+            bad_stars_x_mask = np.where((stars_xy_coords[0] < self.pars["image_edge"] / 10) |
+                                        (stars_xy_coords[0] > (image_data.shape[1] - self.pars["image_edge"] / 10)))[0]
+            bad_stars_y_mask = np.where((stars_xy_coords[1] < self.pars["image_edge"] / 10) |
+                                        (stars_xy_coords[1] > (image_data.shape[0] - self.pars["image_edge"] / 10)))[0]
             bad_stars_mask = np.concatenate((bad_stars_x_mask, bad_stars_y_mask), axis=0)
             if len(bad_stars_mask) > 0:
                 stars_xy_coords[0][bad_stars_mask] = 0
@@ -74,6 +74,8 @@ class SRWSubAPP:
             self.raw_flux[image_index] = flux_image_data
             self.raw_magn[image_index] = magn_image_data
             self.raw_merr[image_index] = merr_image_data
+
+            self._logs_apphot(image_index, image_header)
 
     @staticmethod
     def _logs_apphot(image_index, image_header):
