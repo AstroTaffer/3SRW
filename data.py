@@ -115,7 +115,7 @@ class SRWData(SRWSubIOS, SRWSubCCT, SRWSubAPP, SRWSubDFP, SRWSubVSS, SRWSubPLT):
 
 # TODO
 #   It is way too easy to forget to save your calculations
-#   thy must be implemented as "SAVE - ON/OFF" switch with ON by default
+#   they must be implemented as "SAVE - ON/OFF" switch with ON by default
 #   Same goes with various plotting
 #   Plotting functions also have confusing names and bad code
 #   If a parameter is not specified by the moment it is used, it should be specifed on the run
