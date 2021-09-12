@@ -122,4 +122,4 @@ class SRWData(SRWSubIOS, SRWSubCCT, SRWSubAPP, SRWSubDFP, SRWSubVSS, SRWSubPLT):
 #   implement as "IF IS NONE" check
 #   Current logs are outright awful
 #   ROMS critetia needs to be rewritten and tested on higher quality data
-#   SINCE I'M CALCULATING "BJD % 1" I'M STUCK WITHIN BOUNDS OF ONE JULIAN DAY
+#   Since I'm calculating "BJD % 1" I'm stuck within bounds of one JD
