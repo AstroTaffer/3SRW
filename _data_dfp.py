@@ -118,6 +118,7 @@ class SRWSubDFP:
 
     @staticmethod
     def _logs_diffphot(all_stars, success_stars):
+    # FIXME Logs are somehow called in wrong way
         with open("LOGS.txt", "a") as logs_file:
             logs_file.write(f"{datetime.now()}\tDIFPHOT: Processed {all_stars} stars, "
                             f"{success_stars} successfully\n")
