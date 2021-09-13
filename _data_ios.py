@@ -69,9 +69,11 @@ class SRWSubIOS:
                 merr_file.write("\t".join(self.clr_merr[image_index].astype(str)) + "\n")
 
     def read_vs_mask(self):
-        with open(self.pars["vs_mask_file"], "r") as mask_file:
+        with open(f"VSS_MASK_{self.pars['image_filter']}"
+                  f"{self.pars['aperture']}_{self.pars['vss_method']}.txt", "r") as mask_file:
             self.vs_mask = np.array(mask_file.readline().split("\t"), dtype=bool)
 
     def write_vs_mask(self):
-        with open(self.pars["vs_mask_file"], "w") as mask_file:
+        with open(f"VSS_MASK_{self.pars['image_filter']}"
+                  f"{self.pars['aperture']}_{self.pars['vss_method']}.txt", "w") as mask_file:
             mask_file.write("\t".join(self.vs_mask.astype(str)))

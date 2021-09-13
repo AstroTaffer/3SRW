@@ -30,6 +30,9 @@ class SRWSubDFP:
         self.clr_magn = np.zeros((images_number, stars_number))
         self.clr_merr = np.zeros((images_number, stars_number))
 
+        # FIXME - if catalog is read from file then it needs to be multiplied by units.deg
+        # FIXME - Otherwise, if calculated - does not
+        # catalog_stars = coord.SkyCoord(ra=self.catalog["RAJ2000"], dec=self.catalog["DEJ2000"], frame="icrs")
         # noinspection PyUnresolvedReferences
         catalog_stars = coord.SkyCoord(ra=self.catalog["RAJ2000"] * units.deg,
                                        dec=self.catalog["DEJ2000"] * units.deg,

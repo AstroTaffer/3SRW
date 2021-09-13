@@ -55,9 +55,11 @@ class SRWSubVSS:
 
         for _ in range(stars_number):
             # Use width
-            if std_star_magn[_] > apr_std_func[0] * mean_star_magn[_] + apr_std_func[1]:
+            if std_star_magn[_] - (apr_std_func[0] * mean_star_magn[_] + apr_std_func[1]) > 0.20:
                 self.vs_mask[_] = True
                 vs_counter += 1
+                # 0.20 is the width of the curve. It was determined empirically.
+                # That's not good - need more accurate and general method
 
             if (_ + 1) % 100 == 0:
                 self._logs_vss(_, vs_counter)
@@ -80,6 +82,8 @@ class SRWSubVSS:
             if mean_star_merr[_] - np.exp(apr_merr_func[0] * mean_star_magn[_] + apr_merr_func[1]) > 0.0005:
                 self.vs_mask[_] = True
                 vs_counter += 1
+                # 0.0005 is the width of the curve. It was determined empirically.
+                # That's not good - need more accurate and general method
 
             if (_ + 1) % 100 == 0:
                 self._logs_vss(_, vs_counter)
@@ -97,7 +101,8 @@ class SRWSubVSS:
 
         good_id = np.where(mean_star_magn > 10)[0]
         apr_std_func = np.polyfit(mean_star_magn[good_id], np.log(std_star_magn[good_id]),
-                                  deg=1, w=np.sqrt(std_star_magn))
+                                  deg=1)
+        # Cut w=np.sqrt(std_star_magn[good_id]) - harmful
 
         for _ in range(stars_number):
             med_star_magn = np.nanmedian(self.clr_magn[:, _])

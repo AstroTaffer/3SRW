@@ -83,7 +83,6 @@ class SRWSubPLT:
             finite_id = np.isfinite(mean_star_magn)
             apr_merr_func = np.polyfit(mean_star_magn[finite_id], np.log(mean_star_merr[finite_id]),
                                        deg=1, w=np.sqrt(mean_star_merr))
-            # Cut w=np.sqrt(merr_mean) - might be harmful
             apr_xpoints = np.linspace(np.nanmin(mean_star_magn), np.nanmax(mean_star_magn), num=100)
 
             plt_ax.plot(apr_xpoints, np.exp(apr_merr_func[0] * apr_xpoints + apr_merr_func[1]),
@@ -118,15 +117,17 @@ class SRWSubPLT:
             apr_std_func = np.polyfit(mean_star_magn[finite_id], std_star_magn[finite_id], deg=1)
             apr_xpoints = np.linspace(np.nanmin(mean_star_magn), np.nanmax(mean_star_magn), num=100)
 
-            plt_ax.plot(apr_xpoints, apr_std_func[0] * apr_xpoints + apr_std_func[1],
+            plt_ax.plot(apr_xpoints, apr_std_func[0] * apr_xpoints + apr_std_func[1] + 0.20,
                         "r-", linewidth=1)
+            # 0.20 is the width of the curve. It was determined empirically.
+            # That's not good - need more accurate and general method
 
             plt.savefig(f"SIGMA(MAGN)_{self.pars['image_filter']}{self.pars['aperture']}_SIGMA_EXTRA.png")
 
         elif self.pars["vss_method"] == "ROMS2":
             good_id = np.where(mean_star_magn > 10)[0]
-            apr_std_func = np.polyfit(mean_star_magn[good_id], np.log(std_star_magn[good_id]),
-                                      deg=1, w=np.sqrt(std_star_magn))
+            apr_std_func = np.polyfit(mean_star_magn[good_id], np.log(std_star_magn[good_id]), deg=1)
+            # Cut w=np.sqrt(std_star_magn[good_id]) - harmful
             apr_xpoints = np.linspace(np.nanmin(mean_star_magn), np.nanmax(mean_star_magn), num=100)
             plt_ax.plot(apr_xpoints, np.exp(apr_std_func[0] * apr_xpoints + apr_std_func[1]), "r-", linewidth=1)
 
@@ -140,24 +141,24 @@ class SRWSubPLT:
 
         plt_fig, plt_ax = plt.subplots(dpi=150)
         plt_ax.set_xlabel(r"$\langle m \rangle$")
-        plt_ax.set_ylabel(r"$\n(\sigma_m)$")
+        plt_ax.set_ylabel(r"$\ln(\sigma_m)$")
         plt_ax.grid()
-        plt_ax.plot(mean_star_magn, std_star_magn, "k.", markersize=2)
+        plt_ax.plot(mean_star_magn, np.log(std_star_magn), "k.", markersize=2)
 
         for _ in range(len(self.catalog)):
             if self.vs_mask[_]:
-                plt_ax.plot(mean_star_magn[_], std_star_magn[_], "bo", markersize=4)
+                plt_ax.plot(mean_star_magn[_], np.log(std_star_magn[_]), "bo", markersize=4)
         plt.savefig(f"LN(SIGMA(MAGN))_{self.pars['image_filter']}"
                     f"{self.pars['aperture']}_{self.pars['vss_method']}.png")
 
         if self.pars["vss_method"] == "ROMS2":
             good_id = np.where(mean_star_magn > 10)[0]
-            apr_std_func = np.polyfit(mean_star_magn[good_id], np.log(std_star_magn[good_id]),
-                                      deg=1, w=np.sqrt(std_star_magn))
-            apr_xpoints = np.linspace(np.nanmin(mean_star_magn), np.nanmax(mean_star_magn), num=100)
+            apr_std_func = np.polyfit(mean_star_magn[good_id], np.log(std_star_magn[good_id]), deg=1)
+            # Cut w=np.sqrt(std_star_magn[good_id]) - harmful
+            apr_xpoints = np.linspace(10, np.nanmax(mean_star_magn), num=2)
             plt_ax.plot(apr_xpoints, apr_std_func[0] * apr_xpoints + apr_std_func[1], "r-", linewidth=1)
 
-            plt.savefig(f"LN_SIGMA(MAGN)_{self.pars['image_filter']}{self.pars['aperture']}_ROMS2_EXTRA.png")
+            plt.savefig(f"LN(SIGMA(MAGN))_{self.pars['image_filter']}{self.pars['aperture']}_ROMS2_EXTRA.png")
 
         plt.close(plt_fig)
 
