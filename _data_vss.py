@@ -126,4 +126,4 @@ class SRWSubVSS:
         with open("LOGS.txt", "a") as logs_file:
             logs_file.write(f"{datetime.now()}\tVSS: Processed {all_stars} stars, "
                             f"{var_stars} recognised as variable\n")
-            print(f"{datetime.now()}\tDIFPHOT: Processed {all_stars} stars, {var_stars} recognised as variable\n")
+            print(f"{datetime.now()}\tVSS: Processed {all_stars} stars, {var_stars} recognised as variable")

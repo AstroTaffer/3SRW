@@ -1,5 +1,6 @@
 import numpy as np
 import astropy.io.ascii as asc
+import astropy.units as units
 
 from utils import SRWUtils
 
@@ -19,9 +20,12 @@ class SRWSubIOS:
         self.clr_merr = None
         self.vs_mask = None
 
+    # noinspection PyUnresolvedReferences
     def read_catalog_file(self):
         self.catalog = asc.read(self.pars["catalog_file"], format="commented_header", delimiter="\t",
                                 fill_values=[(asc.masked, "nan")])
+        self.catalog["RAJ2000"] = self.catalog["RAJ2000"] * units.deg
+        self.catalog["DEJ2000"] = self.catalog["DEJ2000"] * units.deg
 
     def write_catalog_file(self):
         asc.write(self.catalog, self.pars["catalog_file"], overwrite=True, delimiter="\t",

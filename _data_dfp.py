@@ -30,13 +30,7 @@ class SRWSubDFP:
         self.clr_magn = np.zeros((images_number, stars_number))
         self.clr_merr = np.zeros((images_number, stars_number))
 
-        # FIXME - if catalog is read from file then it needs to be multiplied by units.deg
-        # FIXME - Otherwise, if calculated - does not
-        # catalog_stars = coord.SkyCoord(ra=self.catalog["RAJ2000"], dec=self.catalog["DEJ2000"], frame="icrs")
-        # noinspection PyUnresolvedReferences
-        catalog_stars = coord.SkyCoord(ra=self.catalog["RAJ2000"] * units.deg,
-                                       dec=self.catalog["DEJ2000"] * units.deg,
-                                       frame="icrs")
+        catalog_stars = coord.SkyCoord(ra=self.catalog["RAJ2000"], dec=self.catalog["DEJ2000"], frame="icrs")
 
         for target_star_index in range(stars_number):
             if np.isfinite(self.raw_magn[:, target_star_index]).any():
@@ -80,8 +74,7 @@ class SRWSubDFP:
                         ens_stars_magn[:, _] = self.raw_magn[:, ens_stars_indexes[_]]
                         ens_stars_merr[:, _] = self.raw_merr[:, ens_stars_indexes[_]]
 
-                    eca_image_weight = np.ones(len(ens_stars_indexes)) / np.square(np.nanmean(ens_stars_merr,
-                                                                                              axis=0))
+                    eca_image_weight = np.ones(len(ens_stars_indexes)) / np.nanmean(np.square(ens_stars_merr), axis=0)
                     eca_mean_image_magn = np.nansum(ens_stars_magn * eca_image_weight,
                                                     axis=1) / np.nansum(eca_image_weight)
 
@@ -122,4 +115,4 @@ class SRWSubDFP:
         with open("LOGS.txt", "a") as logs_file:
             logs_file.write(f"{datetime.now()}\tDIFPHOT: Processed {all_stars} stars, "
                             f"{success_stars} successfully\n")
-            print(f"{datetime.now()}\tDIFPHOT: Processed {all_stars} stars, {success_stars} successfully\n")
+            print(f"{datetime.now()}\tDIFPHOT: Processed {all_stars} stars, {success_stars} successfully")

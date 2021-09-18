@@ -51,6 +51,7 @@ class SRWSubPLT:
                 plt_ax.set_xlabel(f"BJD - {xlabel_bjd}")
                 plt_ax.set_ylabel("m")
                 plt_ax.grid()
+                plt_ax.invert_yaxis()
                 plt_ax.plot(bjd_list, self.clr_magn[:, _], "k.", markersize=2)
                 plt.savefig(f"LC_{self.pars['image_filter']}{self.pars['aperture']}_"
                             f"{self.pars['vss_method']}_{_ + 1}.png")
@@ -72,12 +73,11 @@ class SRWSubPLT:
         plt_ax.set_ylabel(r"$\langle m_{err} \rangle$")
         plt_ax.grid()
         plt_ax.plot(mean_star_magn, mean_star_merr, "k.", markersize=2)
+        plt.savefig(f"MERR(MAGN)_{self.pars['image_filter']}{self.pars['aperture']}_{self.pars['vss_method']}.png")
 
         for _ in range(len(self.catalog)):
             if self.vs_mask[_]:
                 plt_ax.plot(mean_star_magn[_], mean_star_merr[_], "bo", markersize=4)
-        plt.savefig(f"MERR(MAGN)_{self.pars['image_filter']}"
-                    f"{self.pars['aperture']}_{self.pars['vss_method']}.png")
 
         if self.pars["vss_method"] == "ERRORS":
             finite_id = np.isfinite(mean_star_magn)
@@ -105,12 +105,11 @@ class SRWSubPLT:
         plt_ax.set_ylabel(r"$\sigma_m$")
         plt_ax.grid()
         plt_ax.plot(mean_star_magn, std_star_magn, "k.", markersize=2)
+        plt.savefig(f"SIGMA(MAGN)_{self.pars['image_filter']}{self.pars['aperture']}_{self.pars['vss_method']}.png")
 
         for _ in range(len(self.catalog)):
             if self.vs_mask[_]:
                 plt_ax.plot(mean_star_magn[_], std_star_magn[_], "bo", markersize=4)
-        plt.savefig(f"SIGMA(MAGN)_{self.pars['image_filter']}"
-                    f"{self.pars['aperture']}_{self.pars['vss_method']}.png")
 
         if self.pars["vss_method"] == "SIGMA":
             finite_id = np.isfinite(mean_star_magn)
@@ -166,4 +165,4 @@ class SRWSubPLT:
     def _logs_light_curves(vs_counter):
         with open("LOGS.txt", "a") as logs_file:
             logs_file.write(f"{datetime.now()}\tVSPLT: Plotted {vs_counter} variable stars light curves\n")
-            print(f"{datetime.now()}\tVSPLT: Plotted {vs_counter} variable stars light curves\n")
+            print(f"{datetime.now()}\tVSPLT: Plotted {vs_counter} variable stars light curves")
