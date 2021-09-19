@@ -33,7 +33,7 @@ class SRWSubVSS:
         vs_counter = 0
 
         for _ in range(stars_number):
-            if np.isfinite(self.clr_magn[:, _]).all():
+            if np.isfinite(self.clr_magn[:, _]).any():
                 self.vs_mask[_] = True
                 vs_counter += 1
 
