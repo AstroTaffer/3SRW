@@ -34,14 +34,13 @@ class SRWSubDFP:
 
         for target_star_index in range(stars_number):
             if np.isfinite(self.raw_magn[:, target_star_index]).any():
-
                 ens_stars_indexes = []
-                stars_goodness = [True for _ in range(stars_number)]
                 search_radius = self.pars["isr"]
                 # noinspection PyUnresolvedReferences
                 target_star = coord.SkyCoord(ra=self.catalog[target_star_index]["RAJ2000"] * units.deg,
                                              dec=self.catalog[target_star_index]["DEJ2000"] * units.deg,
                                              frame="icrs")
+                self.clr_magn[:, target_star_index] = self.raw_magn[:, target_star_index]
 
                 while len(ens_stars_indexes) < 10 and search_radius <= self.pars["msr"]:
                     # noinspection PyUnresolvedReferences
@@ -50,12 +49,11 @@ class SRWSubDFP:
 
                     check_index = 0
                     while check_index < len(ens_stars_indexes):
-                        # if check_star is target_star or check_star is "all-NaN" or "not good"
+                        # if check_star is target_star or check_star is "all-NaN"
                         # or has too different magnitude:
                         # delete check_star from ensemble
                         if ens_stars_indexes[check_index] == target_star_index or \
-                                np.isnan(self.raw_magn[:, check_index]).all() or \
-                                not stars_goodness[ens_stars_indexes[check_index]] or \
+                                not np.isfinite(self.raw_magn[:, check_index]).any() or \
                                 np.absolute(np.nanmean(self.raw_magn[:, target_star_index]) -
                                             np.nanmean(self.raw_magn[:, ens_stars_indexes[check_index]]) >
                                             self.pars["msr"]):
@@ -65,7 +63,6 @@ class SRWSubDFP:
 
                     if len(ens_stars_indexes) < 10:
                         search_radius += 1
-                        stars_goodness = [True for _ in range(stars_number)]
                         continue
 
                     ens_stars_magn = np.zeros((images_number, len(ens_stars_indexes)))
@@ -73,36 +70,38 @@ class SRWSubDFP:
                     for _ in range(len(ens_stars_indexes)):
                         ens_stars_magn[:, _] = self.raw_magn[:, ens_stars_indexes[_]]
                         ens_stars_merr[:, _] = self.raw_merr[:, ens_stars_indexes[_]]
+                    max_eca_std = self.pars["std_lim"] + 1
 
-                    eca_image_weight = np.ones(len(ens_stars_indexes)) / np.nanmean(np.square(ens_stars_merr), axis=0)
-                    eca_mean_image_magn = np.nansum(ens_stars_magn * eca_image_weight,
-                                                    axis=1) / np.nansum(eca_image_weight)
+                    while max_eca_std > self.pars["std_lim"] and len(ens_stars_indexes) > 10:
+                        eca_image_weight = np.ones(len(ens_stars_indexes)) / np.nanmean(np.square(ens_stars_merr),
+                                                                                        axis=0)
+                        eca_mean_image_magn = np.nansum(ens_stars_magn * eca_image_weight,
+                                                        axis=1) / np.nansum(eca_image_weight)
+                        eca_correction = eca_mean_image_magn - np.nanmean(eca_mean_image_magn)
+                        ens_stars_magn -= eca_correction.reshape((-1, 1))
+                        self.clr_magn[:, target_star_index] -= eca_correction
 
-                    eca_correction = eca_mean_image_magn - np.nanmean(eca_mean_image_magn)
-                    ens_stars_magn -= eca_correction.reshape((-1, 1))
+                        eca_std = np.nanstd(ens_stars_magn, axis=0)
+                        max_eca_std = np.max(eca_std)
+                        max_eca_std_arg = np.argmax(eca_std)
 
-                    eca_std = np.nanstd(ens_stars_magn, axis=0)
-                    if np.max(eca_std) > self.pars["std_lim"]:
-                        stars_goodness[ens_stars_indexes[np.argmax(eca_std)]] = False
-                        ens_stars_indexes = []
-                        continue
-                    else:
-                        self.clr_magn[:, target_star_index] = self.raw_magn[:, target_star_index] - eca_correction
-                        self.clr_merr[:, target_star_index] = np.sqrt(
-                            (1 / np.nansum(1 / np.square(ens_stars_merr), axis=1))
-                            + np.square(self.raw_merr[:, target_star_index]))
-                        counter_success += 1
+                        if max_eca_std > self.pars["std_lim"]:
+                            ens_stars_indexes = np.delete(ens_stars_indexes, max_eca_std_arg)
+                            ens_stars_magn = np.delete(ens_stars_magn, max_eca_std_arg, 1)
+                            ens_stars_merr = np.delete(ens_stars_merr, max_eca_std_arg, 1)
 
                 if len(ens_stars_indexes) < 10:
                     self.clr_magn[:, target_star_index] = np.nan
                     self.clr_merr[:, target_star_index] = np.nan
-            else:
-                # It would be better to just outright delete 'all-NaN' stars so I don't have to worry about them later
-                # But I don't have neither time nor will to worry about it right now
+                else:
+                    self.clr_merr[:, target_star_index] = np.sqrt(
+                        (1 / np.nansum(1 / np.square(ens_stars_merr), axis=1))
+                        + np.square(self.raw_merr[:, target_star_index]))
+                    counter_success += 1
 
+            else:
                 self.clr_magn[:, target_star_index] = np.nan
                 self.clr_merr[:, target_star_index] = np.nan
-                continue
 
             if (target_star_index + 1) % 100 == 0:
                 self._logs_diffphot(target_star_index + 1, counter_success)
