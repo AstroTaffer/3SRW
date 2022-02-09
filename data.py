@@ -18,7 +18,9 @@ class SRWData(SRWSubIOS, SRWSubCCT, SRWSubAPP, SRWSubDFP, SRWSubVSS, SRWSubPLT):
         - Internal catalog
         - Raw flux, magnitude and magnitude error
         - Clear flux, magnitude and magnitude error
-        - [mask]
+        - Mask of variable stars candidates
+        - VSS criteria control graphs
+        - Varialbe stars light curves
 
     Class dictionary pars_names contains full parameters names and can be used as a handbook.
     """
